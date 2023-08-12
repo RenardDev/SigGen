@@ -117,7 +117,7 @@ def MakeFunctionHash(start_address, end_address):
 		else:
 			signature_bytes.extend(ida_bytes.get_bytes(start_address + offset, 1))
 			offset += 1
-	return (Adler32(signature_bytes) & ~0xFFFF) | offset
+	return ((Adler32(signature_bytes) & ~0xFFFF) | offset, signature_bytes)
 
 class SigGen(ida_idaapi.plugin_t):
 	flags = ida_idaapi.PLUGIN_MOD
@@ -156,10 +156,10 @@ class SigGen(ida_idaapi.plugin_t):
 					func_start = idc.get_func_attr(current_address, idc.FUNCATTR_START)
 					func_end = idc.get_func_attr(current_address, idc.FUNCATTR_END)
 					if current_address == func_start:
-						func_hash = MakeFunctionHash(func_start, func_end)
-						print(f'Signature (Function Hash: 0x{func_hash:08X}): {signature}')
+						func_hash, signature_bytes = MakeFunctionHash(func_start, func_end)
+						idc.msg(f'Signature (Hash: 0x{func_hash:08X}): {signature}\n')
 					else:
-						print(f'Signature: {signature}')
+						idc.msg(f'Signature: {signature}\n')
 					return
 				else:
 					count += 1
@@ -167,7 +167,7 @@ class SigGen(ida_idaapi.plugin_t):
 			else:
 				break
 
-		print('Failed to generate signature.')
+		idc.msg('Failed to generate signature.\n')
 
 _SigGen = None
 bPluginMode = False
