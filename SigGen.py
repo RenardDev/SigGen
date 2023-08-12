@@ -1,5 +1,5 @@
 # Name: SigGen.py
-# Version: 1.0.0
+# Version: 1.0.1
 # Author: RenardDev (zeze839@gmail.com)
 
 # IDA imports
@@ -52,6 +52,7 @@ def GetInstructionSignature(address, show_mask):
 					if show_mask:
 						insn_signature += ' ?' * op_size
 			return (insn, insn_signature)
+	return (None, None)
 
 def GetInstructionSignatureBytes(address):
 	insn = DecodeInstruction(address)
@@ -76,6 +77,7 @@ def GetInstructionSignatureBytes(address):
 				elif op.type == ida_ua.o_phrase:
 					insn_signature_bytes.extend(insn_bytes[op.offb:op.offb + op_size])
 			return (insn, insn_signature_bytes)
+	return (None, None)
 
 def MakeSignature(address, insn_count):
 	signature = ''
@@ -157,7 +159,10 @@ class SigGen(ida_idaapi.plugin_t):
 					func_end = idc.get_func_attr(current_address, idc.FUNCATTR_END)
 					if current_address == func_start:
 						func_hash, signature_bytes = MakeFunctionHash(func_start, func_end)
-						idc.msg(f'Signature (Hash: 0x{func_hash:08X}): {signature}\n')
+						if func_hash:
+							idc.msg(f'Signature (Hash: 0x{func_hash:08X}): {signature}\n')
+						else:
+							break
 					else:
 						idc.msg(f'Signature: {signature}\n')
 					return
