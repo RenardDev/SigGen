@@ -1,5 +1,5 @@
 # Name: SigGen.py
-# Version: 1.0.1
+# Version: 1.0.2
 # Author: RenardDev (zeze839@gmail.com)
 
 # IDA imports
@@ -45,8 +45,6 @@ def GetInstructionSignature(address, show_mask):
 				else:
 					op_size = insn.size - op.offb
 				if op.type == ida_ua.o_reg:
-					insn_signature += BytesToString(insn_bytes[op.offb:op.offb + op_size])
-				elif op.type == ida_ua.o_phrase:
 					insn_signature += BytesToString(insn_bytes[op.offb:op.offb + op_size])
 				else:
 					if show_mask:
