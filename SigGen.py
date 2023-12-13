@@ -1,5 +1,5 @@
 # Name: SigGen.py
-# Version: 1.0.2
+# Version: 1.0.3
 # Author: RenardDev (zeze839@gmail.com)
 
 # IDA imports
@@ -28,6 +28,9 @@ def DecodeInstruction(address):
 def BytesToString(bytes):
 	return ' '.join(map(lambda x: f'{x:02X}', bytes))
 
+def IsOperandIdpSpec(op):
+	return (op.type == ida_ua.o_idpspec0) | (op.type == ida_ua.o_idpspec1) | (op.type == ida_ua.o_idpspec2) | (op.type == ida_ua.o_idpspec3) | (op.type == ida_ua.o_idpspec4) | (op.type == ida_ua.o_idpspec5)
+
 def GetInstructionSignature(address, show_mask):
 	insn = DecodeInstruction(address)
 	if insn:
@@ -35,7 +38,10 @@ def GetInstructionSignature(address, show_mask):
 		if insn.ops[0].type == ida_ua.o_void:
 			return (insn, BytesToString(insn_bytes))
 		else:
-			insn_signature = BytesToString(insn_bytes[:insn.ops[0].offb])
+			if IsOperandIdpSpec(insn.ops[0]) & 0:
+				insn_signature = BytesToString(insn_bytes[:1])
+			else:
+				insn_signature = BytesToString(insn_bytes[:insn.ops[0].offb])
 			op_pairs = [(i, insn.ops[i], insn.ops[i + 1]) for i in range(len(insn.ops) - 1)]
 			for i, op, next_op in op_pairs:
 				if (op.type == ida_ua.o_void) | ((i > 0) & (op.offb == 0)):
@@ -44,7 +50,11 @@ def GetInstructionSignature(address, show_mask):
 					op_size = next_op.offb - op.offb
 				else:
 					op_size = insn.size - op.offb
-				if op.type == ida_ua.o_reg:
+				if IsOperandIdpSpec(op):
+					insn_signature += BytesToString(insn_bytes[op.offb:op.offb + op_size])
+				elif op.type == ida_ua.o_reg:
+					insn_signature += BytesToString(insn_bytes[op.offb:op.offb + op_size])
+				elif op.type == ida_ua.o_phrase:
 					insn_signature += BytesToString(insn_bytes[op.offb:op.offb + op_size])
 				else:
 					if show_mask:
@@ -61,7 +71,10 @@ def GetInstructionSignatureBytes(address):
 			insn_signature_bytes.extend(insn_bytes)
 			return (insn, insn_signature_bytes)
 		else:
-			insn_signature_bytes.extend(insn_bytes[:insn.ops[0].offb])
+			if IsOperandIdpSpec(insn.ops[0]) & 0:
+				insn_signature_bytes.extend(insn_bytes[:1])
+			else:
+				insn_signature_bytes.extend(insn_bytes[:insn.ops[0].offb])
 			op_pairs = [(i, insn.ops[i], insn.ops[i + 1]) for i in range(len(insn.ops) - 1)]
 			for i, op, next_op in op_pairs:
 				if (op.type == ida_ua.o_void) | ((i > 0) & (op.offb == 0)):
@@ -70,7 +83,9 @@ def GetInstructionSignatureBytes(address):
 					op_size = next_op.offb - op.offb
 				else:
 					op_size = insn.size - op.offb
-				if op.type == ida_ua.o_reg:
+				if IsOperandIdpSpec(op):
+					insn_signature_bytes.extend(insn_bytes[op.offb:op.offb + op_size])
+				elif op.type == ida_ua.o_reg:
 					insn_signature_bytes.extend(insn_bytes[op.offb:op.offb + op_size])
 				elif op.type == ida_ua.o_phrase:
 					insn_signature_bytes.extend(insn_bytes[op.offb:op.offb + op_size])
