@@ -38,10 +38,7 @@ def GetInstructionSignature(address, show_mask):
 		if insn.ops[0].type == ida_ua.o_void:
 			return (insn, BytesToString(insn_bytes))
 		else:
-			if IsOperandIdpSpec(insn.ops[0]) & 0:
-				insn_signature = BytesToString(insn_bytes[:1])
-			else:
-				insn_signature = BytesToString(insn_bytes[:insn.ops[0].offb])
+			insn_signature = BytesToString(insn_bytes[:insn.ops[0].offb])
 			op_pairs = [(i, insn.ops[i], insn.ops[i + 1]) for i in range(len(insn.ops) - 1)]
 			for i, op, next_op in op_pairs:
 				if (op.type == ida_ua.o_void) | ((i > 0) & (op.offb == 0)):
@@ -71,10 +68,7 @@ def GetInstructionSignatureBytes(address):
 			insn_signature_bytes.extend(insn_bytes)
 			return (insn, insn_signature_bytes)
 		else:
-			if IsOperandIdpSpec(insn.ops[0]) & 0:
-				insn_signature_bytes.extend(insn_bytes[:1])
-			else:
-				insn_signature_bytes.extend(insn_bytes[:insn.ops[0].offb])
+			insn_signature_bytes.extend(insn_bytes[:insn.ops[0].offb])
 			op_pairs = [(i, insn.ops[i], insn.ops[i + 1]) for i in range(len(insn.ops) - 1)]
 			for i, op, next_op in op_pairs:
 				if (op.type == ida_ua.o_void) | ((i > 0) & (op.offb == 0)):
